@@ -10,14 +10,27 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import create_retrieval_chain
 from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from dotenv import load_dotenv
 import time
 from io import BytesIO
 import fitz  # PyMuPDF
 import os
 
+# Set up page configuration
+st.set_page_config(
+    page_title="SBA INFO SOLUTION",
+    page_icon="sba_info_solutions_logo.jpg",  # Path to your icon
+    layout="wide",  # Wide layout
+)
+
+# Load environment variables
+load_dotenv()
+groq_api_key = os.getenv('GROQ_API_KEY')
+google_api_key = os.getenv("GOOGLE_API_KEY")
+
 # Initialize LLMs
-llm = ChatGroq( model_name="Llama3-8b-8192")
-google_llm = GoogleGenerativeAI(model="models/text-bison-001")
+llm = ChatGroq(groq_api_key=groq_api_key, model_name="Llama3-8b-8192")
+google_llm = GoogleGenerativeAI(model="models/text-bison-001", google_api_key=google_api_key)
 
 # Define prompt template
 prompt = ChatPromptTemplate.from_template(
@@ -183,3 +196,4 @@ if st.button("Get Answer"):
                 st.write("--------------------------------")
     else:
         st.warning("Please crawl URLs or upload PDFs first and enter a question.")
+
