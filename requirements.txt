@@ -8,5 +8,4 @@ langchain-core
 langchain-community
 python-dotenv
 pymupdf
-faiss-cpu`
-
+faiss-cpu
