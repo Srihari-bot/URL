@@ -30,7 +30,7 @@ load_dotenv()
 
 # Initialize LLMs
 llm = ChatGroq(groq_api_key=groq_api_key, model_name="Llama3-8b-8192")
-google_llm = GoogleGenerativeAI(model="models/text-bison-001", google_api_key=google_api_key)
+google_llm = GoogleGenerativeAI(model="models/text-bison-001")
 
 # Define prompt template
 prompt = ChatPromptTemplate.from_template(
