@@ -25,8 +25,8 @@ st.set_page_config(
 
 # Load environment variables
 load_dotenv()
-groq_api_key = os.getenv('GROQ_API_KEY')
-google_api_key = os.getenv("GOOGLE_API_KEY")
+#groq_api_key = os.getenv('GROQ_API_KEY')
+#google_api_key = os.getenv("GOOGLE_API_KEY")
 
 # Initialize LLMs
 llm = ChatGroq(groq_api_key=groq_api_key, model_name="Llama3-8b-8192")
