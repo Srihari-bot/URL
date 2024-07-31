@@ -3,3 +3,10 @@ pdfplumber
 requests
 beautifulsoup4
 langchain-google-genai
+langchain-groq
+langchain-core
+langchain-community
+python-dotenv
+pymupdf
+faiss-cpu`
+
