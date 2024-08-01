@@ -122,6 +122,7 @@ if uploaded_file is not None:
         
         if st.button("Crawl Extracted Links"):
             crawled_content = crawl_links(links)
+            st.session_state.crawled_content = crawled_content  # Store in session state
             st.subheader("Crawled Content from Links:")
             for link, content in crawled_content.items():
                 st.write(f"**Link:** {link}")
@@ -152,6 +153,7 @@ question = st.text_input("Enter a Question:")
 if st.button("Crawl URL"):
     if url:
         crawled_content = crawl_links([url])
+        st.session_state.crawled_content = crawled_content  # Store in session state
         st.subheader("Crawled Content from URL:")
         for link, content in crawled_content.items():
             st.write(f"**Link:** {link}")
@@ -190,7 +192,15 @@ if st.button("Get Answer"):
         st.write("Question:", question)
         st.write("Answer:", response['answer'])
 
-        # With a streamlit expander
+        # Display extracted content
+        if "crawled_content" in st.session_state:
+            st.subheader("Extracted Content:")
+            for link, content in st.session_state.crawled_content.items():
+                st.write(f"**Link:** {link}")
+                st.write(f"**Content:** {content[:10000]}")  # Display the first 10000 characters
+                st.write("---")
+
+        # Display the context documents
         with st.expander("Document Similarity Search"):
             for i, doc in enumerate(response["context"]):
                 st.write(doc.page_content)  # Ensure `doc` has `page_content` attribute
