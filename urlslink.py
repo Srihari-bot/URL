@@ -35,11 +35,11 @@ google_llm = GoogleGenerativeAI(model="models/text-bison-001", google_api_key=go
 prompt = ChatPromptTemplate.from_template(
 """
 Answer the questions based on the provided context only.
-Please provide the most accurate response based on the question.
+Please provide a detailed and comprehensive response based on the question.
 <context>
 {context}
 <context>
-Questions:{input}
+Questions: {input}
 """
 )
 
