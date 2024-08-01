@@ -211,6 +211,39 @@ if st.button("Get Answer"):
                 st.write("--------------------------------")
     else:
         st.warning("Please crawl URLs or upload PDFs first and enter a question.")
+if st.button("Get Answer"):
+    if question and "crawled_texts" in st.session_state:
+        # Embed the crawled texts
+        vectors = vector_embedding_from_texts(st.session_state.crawled_texts)
+        
+        document_chain = create_stuff_documents_chain(llm, prompt)
+        retriever = vectors.as_retriever()
+        retrieval_chain = create_retrieval_chain(retriever, document_chain)
+        
+        start = time.process_time()
+        response = retrieval_chain.invoke({'input': question})
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write("Response time:", time.process_time() - start)
+            st.write("Question:", question)
+            st.write("Answer:", response['answer'])
+        
+        with col2:
+            st.subheader("Extracted Content:")
+            for link, content in st.session_state.crawled_content.items():
+                st.write(f"**Link:** {link}")
+                st.write(f"**Content:** {content[:10000]}")  # Display the first 10000 characters
+                st.write("---")
+
+        # Display the context documents
+        with st.expander("Document Similarity Search"):
+            for i, doc in enumerate(response["context"]):
+                st.write(doc.page_content)  # Ensure `doc` has `page_content` attribute
+                st.write("--------------------------------")
+    else:
+        st.warning("Please crawl URLs or upload PDFs first and enter a question.")
 
 # Preserve the PDF links and the question
 if "links" in st.session_state:
