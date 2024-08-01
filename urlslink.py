@@ -12,7 +12,6 @@ from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from dotenv import load_dotenv
 import time
-from io import BytesIO
 import fitz  # PyMuPDF
 import os
 
@@ -123,6 +122,7 @@ if uploaded_file is not None:
         if st.button("Crawl Extracted Links"):
             crawled_content = crawl_links(links)
             st.session_state.crawled_content = crawled_content  # Store in session state
+            st.session_state.links = links  # Store the links in session state
             st.subheader("Crawled Content from Links:")
             for link, content in crawled_content.items():
                 st.write(f"**Link:** {link}")
@@ -154,6 +154,7 @@ if st.button("Crawl URL"):
     if url:
         crawled_content = crawl_links([url])
         st.session_state.crawled_content = crawled_content  # Store in session state
+        st.session_state.url = url  # Store the URL in session state
         st.subheader("Crawled Content from URL:")
         for link, content in crawled_content.items():
             st.write(f"**Link:** {link}")
@@ -210,3 +211,17 @@ if st.button("Get Answer"):
                 st.write("--------------------------------")
     else:
         st.warning("Please crawl URLs or upload PDFs first and enter a question.")
+
+# Preserve the PDF links and the question
+if "links" in st.session_state:
+    st.subheader("Previously Extracted Links:")
+    for link in st.session_state.links:
+        st.write(link)
+
+if "url" in st.session_state:
+    st.subheader("Previously Crawled URL:")
+    st.write(st.session_state.url)
+
+if question:
+    st.subheader("Entered Question:")
+    st.write(question)
