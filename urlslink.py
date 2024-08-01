@@ -188,12 +188,15 @@ if st.button("Get Answer"):
         
         start = time.process_time()
         response = retrieval_chain.invoke({'input': question})
-        st.write("Response time:", time.process_time() - start)
-        st.write("Question:", question)
-        st.write("Answer:", response['answer'])
-
-        # Display extracted content
-        if "crawled_content" in st.session_state:
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write("Response time:", time.process_time() - start)
+            st.write("Question:", question)
+            st.write("Answer:", response['answer'])
+        
+        with col2:
             st.subheader("Extracted Content:")
             for link, content in st.session_state.crawled_content.items():
                 st.write(f"**Link:** {link}")
