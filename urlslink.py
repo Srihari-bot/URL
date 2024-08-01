@@ -33,14 +33,14 @@ google_llm = GoogleGenerativeAI(model="models/text-bison-001", google_api_key=go
 
 # Define prompt template
 prompt = ChatPromptTemplate.from_template(
-"""
-Answer the questions based on the provided context only.
-Please provide a detailed and comprehensive response based on the question.
-<context>
-{context}
-<context>
-Questions: {input}
-"""
+    """
+    You are a helpful assistant. Based on the provided context, please answer the following question in detail.
+    Ensure that you cover all relevant aspects and provide a comprehensive response.
+    <context>
+    {context}
+    </context>
+    Question: {input}
+    """
 )
 
 class Document:
@@ -69,7 +69,6 @@ def crawl_links(links):
             response = requests.get(link)
             if response.status_code == 200:
                 soup = BeautifulSoup(response.content, 'html.parser')
-                # Get the full text from the page
                 full_text = soup.get_text()
                 crawled_content[link] = full_text
             else:
@@ -97,7 +96,7 @@ def load_pdf_from_bytes(pdf_bytes):
 
 def vector_embedding_from_texts(texts):
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=300)
     documents = []
     for text in texts[:20]:  # Limiting to the first 20 texts
         chunks = text_splitter.split_text(text)
@@ -108,10 +107,9 @@ def vector_embedding_from_texts(texts):
 st.title("SBA INFO SOLUTION")
 
 # Upload PDF file
-uploaded_file = st.file_uploader("Upload PDF files", type=["pdf"])
+uploaded_file = st.file_uploader("Upload PDF files", type=["pdf"], key="pdf_uploader")
 
 if uploaded_file is not None:
-    # Extract links from the PDF
     links = extract_links_from_pdf(uploaded_file)
     
     if links:
@@ -119,68 +117,60 @@ if uploaded_file is not None:
         for link in links:
             st.write(link)
         
-        if st.button("Crawl Extracted Links"):
+        if st.button("Crawl Extracted Links", key="crawl_links"):
             crawled_content = crawl_links(links)
-            st.session_state.crawled_content = crawled_content  # Store in session state
-            st.session_state.links = links  # Store the links in session state
+            st.session_state.crawled_content = crawled_content
+            st.session_state.links = links
             st.subheader("Crawled Content from Links:")
             for link, content in crawled_content.items():
                 st.write(f"**Link:** {link}")
-                st.write(f"**Content:** {content[:10000]}")  # Display the first 10000 characters
+                st.write(f"**Content:** {content[:10000]}")
                 st.write("---")
                 
-                # Store crawled content in session state for later querying
                 if "crawled_texts" not in st.session_state:
                     st.session_state.crawled_texts = []
                 st.session_state.crawled_texts.append(content)
                 
-                # Generate summary using Google AI
-                if st.button(f"Generate Summary for {link}"):
+                if st.button(f"Generate Summary for {link}", key=f"summary_{link}"):
                     summary = generate_summary(content)
                     st.write(f"**Summary for {link}:** {summary}")
                 
-                # Search content using Google API
-                if st.button(f"Search Content for {link}"):
+                if st.button(f"Search Content for {link}", key=f"search_{link}"):
                     search_result = google_api_search(content[:10000])
                     st.write(f"**Search Result for {link}:** {search_result}")
     else:
         st.warning("No links found in the PDF.")
 
-# URL entry for crawling
-url = st.text_input("Enter a URL to crawl:")
-question = st.text_input("Enter a Question:")
+url = st.text_input("Enter a URL to crawl:", key="url_input")
+question = st.text_input("Enter a Question:", key="question_input")
 
-if st.button("Crawl URL"):
+if st.button("Crawl URL", key="crawl_url"):
     if url:
         crawled_content = crawl_links([url])
-        st.session_state.crawled_content = crawled_content  # Store in session state
-        st.session_state.url = url  # Store the URL in session state
+        st.session_state.crawled_content = crawled_content
+        st.session_state.url = url
         st.subheader("Crawled Content from URL:")
         for link, content in crawled_content.items():
             st.write(f"**Link:** {link}")
-            st.write(f"**Content:** {content[:20000]}")  # Display the first 20000 characters
+            st.write(f"**Content:** {content[:20000]}")
             st.write("---")
             
-            # Store crawled content in session state for later querying
             if "crawled_texts" not in st.session_state:
                 st.session_state.crawled_texts = []
             st.session_state.crawled_texts.append(content)
             
-            # Generate summary using Google AI
-            if st.button(f"Generate Summary for {link}"):
+            if st.button(f"Generate Summary for {link}", key=f"url_summary_{link}"):
                 summary = generate_summary(content)
                 st.write(f"**Summary for {link}:** {summary}")
             
-            # Search content using Google API
-            if st.button(f"Search Content for {link}"):
+            if st.button(f"Search Content for {link}", key=f"url_search_{link}"):
                 search_result = google_api_search(content[:20000])
                 st.write(f"**Search Result for {link}:** {search_result}")
     else:
         st.warning("Please enter a valid URL.")
 
-if st.button("Get Answer"):
+if st.button("Get Answer", key="get_answer"):
     if question and "crawled_texts" in st.session_state:
-        # Embed the crawled texts
         vectors = vector_embedding_from_texts(st.session_state.crawled_texts)
         
         document_chain = create_stuff_documents_chain(llm, prompt)
@@ -201,51 +191,16 @@ if st.button("Get Answer"):
             st.subheader("Extracted Content:")
             for link, content in st.session_state.crawled_content.items():
                 st.write(f"**Link:** {link}")
-                st.write(f"**Content:** {content[:10000]}")  # Display the first 10000 characters
+                st.write(f"**Content:** {content[:10000]}")
                 st.write("---")
 
-        # Display the context documents
         with st.expander("Document Similarity Search"):
             for i, doc in enumerate(response["context"]):
-                st.write(doc.page_content)  # Ensure `doc` has `page_content` attribute
-                st.write("--------------------------------")
-    else:
-        st.warning("Please crawl URLs or upload PDFs first and enter a question.")
-if st.button("Get Answer"):
-    if question and "crawled_texts" in st.session_state:
-        # Embed the crawled texts
-        vectors = vector_embedding_from_texts(st.session_state.crawled_texts)
-        
-        document_chain = create_stuff_documents_chain(llm, prompt)
-        retriever = vectors.as_retriever()
-        retrieval_chain = create_retrieval_chain(retriever, document_chain)
-        
-        start = time.process_time()
-        response = retrieval_chain.invoke({'input': question})
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.write("Response time:", time.process_time() - start)
-            st.write("Question:", question)
-            st.write("Answer:", response['answer'])
-        
-        with col2:
-            st.subheader("Extracted Content:")
-            for link, content in st.session_state.crawled_content.items():
-                st.write(f"**Link:** {link}")
-                st.write(f"**Content:** {content[:10000]}")  # Display the first 10000 characters
-                st.write("---")
-
-        # Display the context documents
-        with st.expander("Document Similarity Search"):
-            for i, doc in enumerate(response["context"]):
-                st.write(doc.page_content)  # Ensure `doc` has `page_content` attribute
+                st.write(doc.page_content)
                 st.write("--------------------------------")
     else:
         st.warning("Please crawl URLs or upload PDFs first and enter a question.")
 
-# Preserve the PDF links and the question
 if "links" in st.session_state:
     st.subheader("Previously Extracted Links:")
     for link in st.session_state.links:
