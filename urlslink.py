@@ -18,7 +18,7 @@ import os
 # Set up page configuration
 st.set_page_config(
     page_title="SBA INFO SOLUTION",
-    page_icon="sba_info_solutions_logo(1).jpg",  # Path to your icon
+    page_icon="sba_info_solutions_logo (1).jpg",  # Path to your icon
     layout="wide",  # Wide layout
 )
 
