@@ -187,7 +187,8 @@ if st.button("Get Answer"):
         start = time.process_time()
         response = retrieval_chain.invoke({'input': question})
         st.write("Response time:", time.process_time() - start)
-        st.write(response['answer'])
+        st.write("Question:", question)
+        st.write("Answer:", response['answer'])
 
         # With a streamlit expander
         with st.expander("Document Similarity Search"):
@@ -196,4 +197,3 @@ if st.button("Get Answer"):
                 st.write("--------------------------------")
     else:
         st.warning("Please crawl URLs or upload PDFs first and enter a question.")
-
